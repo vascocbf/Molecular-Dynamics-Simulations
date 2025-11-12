@@ -48,8 +48,45 @@ Simulation implemented in jupyter notebook, $dt=0.01$ (equivalent to $3.6$ days)
 \subsection*{c)}
 
 
-\section*{2.}
-hajasdj as asd asdna sdn k
+\section*{2. Symplectic vs.non-symplectic integrators}
+\subsection*{a)}
+For the Euler integrator, it can be directly seen from equation (123) from the lecture notes that the Jacobian of the time transformation is 
+\begin{equation*}
+  M = 
+  \begin{pmatrix}
+    1 & \Delta t\\
+    -\Delta t & 1
+  \end{pmatrix}
+\end{equation*}
+From this we can easily see that $\det(M)=1+\Delta t^2>1$ for $\Delta t>0$.\\
+The same can be done for the sympletic integrator from equation (124) of the lecture notes, but an extra step needs to be taken. After rewriting the expression for $q(t+\Delta t)$ as
+\begin{equation*}
+  q(t+\Delta t) = q(t) + (p(t)-q(t)\Delta t)\Delta t
+\end{equation*}
+We can find that the Jacobian of the time transformation for this integrator is.
+\begin{equation*}
+  M_s = 
+  \begin{pmatrix}
+    1-\Delta t^2 & \Delta t\\
+    -\Delta t & 1
+  \end{pmatrix}
+\end{equation*}
+For the sympletic integrator we have that $\det(M_s)=1-\Delta t^2+\Delta t^2 = 1$.
+
+\subsection*{b)} To show that $H'$ is a constant of motion I'll show that $H'(t+\Delta t)=H'(t)$. 
+\begin{align*}
+  H'(t+\Delta t) & = \frac{(p(t+\Delta t)^2+ q(t+\Delta t)^2)}{2} -\frac{p(t+\Delta t)q(t+\Delta t)}{2}\Delta t\\
+  p(t+\Delta t)^2 &= p(t)^2 -2p(t)q(t)\Delta t + q(t)^2\Delta t^2\\
+  q(t+\Delta t)^2 &= p(t)^2\Delta t^2 +2p(t)q(t)(\Delta t - \Delta t^3)+q(t)^2(1-\Delta t^2)\\
+  p(t+\Delta t)^2+ q(t+\Delta t)^2&= p(t)^2 (1+\Delta t^2)-2p(t)q(t)\Delta t^3+q(t)^2(1-\Delta t^2+\Delta t ^4)\\ 
+  p(t+\Delta t)q(t+\Delta t) &= p(t)^2\Delta t +p(t)q(t)(1-2\Delta t^2)-q(t)^2(\Delta t - \Delta t^3)\\
+                             &\Rightarrow\\ 
+  2H'(t+\Delta t)&=p(t)^2-p(t)q(t)\Delta t + q(t)^2\\ 
+                 &= 2H'(t)
+\end{align*}
+Therefore it holds that $H'=H-\frac{pq}{2}\Delta t$ is a constant of motion.
+\subsection*{c)} SIMULATION $\Rightarrow$ TODO
+
 \section*{3.}
     
 
