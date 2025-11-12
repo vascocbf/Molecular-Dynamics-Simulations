@@ -1,0 +1,57 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, margin=3cm]{geometry}
+\usepackage{amsmath}
+\usepackage{mathtools}
+
+\title{Computational Physics: Molecular Dynamics Simulations, Assignment 1}
+\author{Vasco Ferreira}
+\date{2025}
+
+\begin{document}
+\maketitle
+
+\section*{1. Halley's comet}
+\subsection*{a) Generalized velocity}
+It would be prone to error to make simulations with would work with value to the order or $10^{-11}$, for the gravitational constant, and values of order $10^{+11}$, one astronomical unit. Therefore before anything is done, space will be rescaled by $1AU$ and time by one year ($1Y$), as follows.
+\begin{equation*}
+  \begin{cases}
+    r \rightarrow &R=\frac{r}{1AU}\\
+    t \rightarrow &T=\frac{t}{1Y}
+  \end{cases}
+\end{equation*}
+
+With this, the gravitational acceleration formula can be rewritten
+
+\begin{align*}
+  \frac{d^2r}{dt^2} &= - \frac{GM}{r^3}\hat{r}\\
+  \frac{d^2R}{dT^2} &= - \frac{(1Y)^2}{(1AU)^3}\frac{GM}{R^3}\hat{R}\\
+  \frac{d^2R}{dT^2} &= - \Gamma\frac{GM}{R^3}\hat{R}
+\end{align*}
+With $\Gamma\approx39,39$. The position, velocity, and acceleration of the Verlet algorithm (eqs. (118), (119) from the lecture notes) can be generalized to 2D as follows
+\begin{align*}
+  &\begin{cases}
+    \vec{x}=(x,y)\\
+    \vec{v}=(v_x,v_y)\\
+    \vec{a}=(a_x,a_y)\\
+  \end{cases}\\
+  &\begin{cases}
+    a_x&= -\Gamma \frac{x}{\sqrt{x^2+y^2}^3}\\
+    a_y&= -\Gamma \frac{y}{\sqrt{x^2+y^2}^3}
+  \end{cases}\\
+\end{align*}
+These positions and velocities are all rescaled as indicated above, meaning that the initial conditions are as follows $\vec{x}(t=0)=(35.2,0)$ and $\vec{v}(t=0)=(0,0.1920952)$
+
+\subsection*{b)}
+Simulation implemented in jupyter notebook, $dt=0.01$ (equivalent to $3.6$ days). When trying $dt=0.1$ accumulated error was too big and comet wasn't in orbit for more than 1 period.
+
+\subsection*{c)}
+
+
+\section*{2.}
+hajasdj as asd asdna sdn k
+\section*{3.}
+    
+
+
+\end{document}

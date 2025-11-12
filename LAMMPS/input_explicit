@@ -1,0 +1,67 @@
+####################################################################################################
+#                            Diffusion of colloids in explicit solvent                             #
+####################################################################################################
+
+#-------------------------------------------Parameters---------------------------------------------#
+variable steps equal 5e6    # Number of integration timesteps
+variable eq_steps equal 1e5 # Number of equilibration steps
+variable dt equal 1e-3 	    # Integration timestep 
+variable R equal 1.         # Radius of colloidal particle
+variable N_solvent equal 500.  	# Number of solution particles
+variable N_colloids equal 15.  	# Number of colloids
+variable L equal 10.  	# Length of cubic simulation box
+variable T equal 5.  	# Temperature
+variable m equal 1.  	# Solvent particles' mass
+variable M equal 10.  	# Colloids' mass
+variable seed equal 123 # Seed for the RNG
+
+#-----------------------------------------Define Styles--------------------------------------------#
+atom_style atomic 	# Atom style used 
+
+#---------------------------------------Create cubic box-------------------------------------------#
+# Define cubic region 
+region sim_box block -$(0.5 * v_L) $(0.5 * v_L) -$(0.5 * v_L) $(0.5 * v_L) -$(0.5 * v_L) $(0.5 * v_L)
+create_box 2 sim_box 	# Create simulation box based on region
+
+#-----------------------------------------Create Atoms---------------------------------------------#
+create_atoms 1 random ${N_colloids} 123 NULL  # Place colloids in box randomly
+create_atoms 2 random ${N_solvent} 456 NULL   # Place solvent particles in box randomly
+
+#---------------------------------------------Masses-----------------------------------------------#
+mass 1 $M
+mass 2 $m
+
+ 
+#----------------------------------------Pair Coefficients-----------------------------------------#
+pair_style lj/cut $R # Truncated LJ interactions for repulsion among particles
+pair_modify shift yes # Shift the LJ potential to 0.0 at the cutoff (thus no discontinuities).
+# Coefficients of the pair interactions 
+#  pair_coeff 1 1 0.  0. 0.
+pair_coeff 1 1 1. $R $R
+pair_coeff 1 2 1. $R $R
+pair_coeff 2 2 0.  0. 0.
+neighbor $(2.*v_R) bin
+
+#---------------------------------------------Fixes------------------------------------------------#
+velocity all create $T ${seed} # Initialise velocities according to Maxwell distribution.
+fix 1 all nve # Microcanonical ensemble (total energy constant)
+
+
+#-----------------------------------------Equilibration--------------------------------------------#
+minimize 1e-4 1e-7 10000 10000
+run ${eq_steps}
+reset_timestep 0
+
+
+#----------------------------------------Measurements----------------------------------------------#
+dump movie all atom 100 ./movie_explicit.lammpstrj # Include this if for visualisation with vmd.  
+variable t equal step*${dt} # Current timestep
+# Compute mean squared displacement
+group colloid type 1
+compute msd colloid msd 
+variable msd equal c_msd[4]
+
+#---------------------------------------------Run--------------------------------------------------#
+timestep ${dt} # Set the timestep of the integration.
+fix print_msd colloid print 1000 "$t ${msd}" file "./data_explicit.txt" screen no # Write to a file
+run ${steps}

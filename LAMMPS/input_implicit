@@ -1,0 +1,70 @@
+################################################################
+#     Diffusion of colloids in implicit solvent                #
+################################################################
+
+
+#-------------------Parameters---------------------------#
+variable steps equal 1e6      # Number of integration timesteps
+variable eq_steps equal 1e4   # Number of equilibration steps
+variable dt equal 1e-3        # Integration timestep 
+variable N_colloids equal 200 # Number of colloids
+#variable N_colloids equal 1
+variable L equal 10.          # Length of cubic simulation box
+variable T equal 5.           # Temperature
+variable M equal 10.          # Colloid mass
+variable seed equal 112       # Seed for the RNG
+
+#-----------------Define Styles--------------------------#
+atom_style atomic 	# Atom style used 
+
+#-----------------Create cubic box-----------------------#
+
+# Define cubic region
+region sim_box block -$(0.5 * v_L) $(0.5 * v_L) -$(0.5 * v_L) $(0.5 * v_L) -$(0.5 * v_L) $(0.5 * v_L)
+# Create simulation box based on region
+create_box 1 sim_box
+
+
+#----------Create Atoms-----------------------------------#
+create_atoms 1 random ${N_colloids} 123 NULL # Place colloids in box randomly
+
+#------------------Masses----------------------------------#
+mass 1 $M
+
+
+#------------Pair Coefficients-----------------------------#
+# When not including pair interactions, one has to turn off the sorting  
+# by using this command, otherwise an error occurs.
+atom_modify sort 0 0.
+
+
+#------------Fixes-----------------------------------------#
+velocity all create $T ${seed} # Initialise velocities Maxwell dist.
+variable gamma equal 1.  # Damp parameter (inversely prop to friction coeff)
+
+# Langevin integration
+fix 1 all nve
+fix 2 all langevin $T $T ${gamma} ${seed}
+
+
+#-------------Equilibration---------------------------------#
+run ${eq_steps}
+reset_timestep 0 # Resets the timestep to 0, has no effect on simulation
+
+
+#-------------Measurements-----------------------------------#
+# Include this for visualisation with vmd.
+dump movie all atom 100 ./movie_implicit.lammpstrj
+# Current timestep
+variable t equal step*${dt}
+# Compute mean squared displacement
+compute msd all msd 
+variable msd equal c_msd[4]
+
+
+#-------------------Run--------------------------------#
+
+timestep ${dt} # Set the timestep of the integration.
+# Write to a file
+fix print_msd all print 1000 "$t ${msd}" file "./data_implicit.txt" screen no
+run ${steps}

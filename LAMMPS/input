@@ -1,0 +1,51 @@
+###################################################################
+# Simulates a string of particles connected via harmonic springs, 
+# subject to gravitational force.                    
+# Performs fixed-energy time integration. At the bottom of the 
+# simulation box we put a reflecting  
+# boundary, so that the particles bounce on it.       
+####################################################################
+
+
+#--------------Parameters-----------------------------------------#
+
+variable steps equal 1e4 # Number of integration timesteps
+variable dt equal 2e-3 # Timestep 
+variable g equal 10.  # Gravitational acceleration
+variable m equal 1.  # Particle mass
+variable l equal 1.  # Spring rest length
+variable k equal 1.  # Spring constant
+boundary f f f # Fixed boundaries in all dimensions.
+
+#---------------Define Styles--------------------------------------#
+atom_style bond # Atom style used 
+
+#---------------Read Data------------------------------------------#
+read_data ./configuration # Load data file (configuration) 
+
+#------------------Masses------------------------------------------#
+mass * $m
+
+#------------------Interactions------------------------------------#
+bond_style harmonic # Harmonic springs
+bond_coeff 1 $(0.5*v_k) $l # Parameters of bond interactions
+
+# When not including pair interactions, one has to turn off the sorting  
+# by using this command, otherwise an error occurs.
+atom_modify sort 0 0.
+
+
+#-------------------Fixes------------------------------------------#
+variable T equal 0.1 # Temperature
+velocity all create $T 123 # Initialise vel Maxwell distribution.
+fix 1 all nve # Microcanonical ensemble (fixed-energy)
+fix 2 all addforce 0. $(-v_m*v_g) 0.  # Add constant (gravitational) force
+fix 3 all wall/reflect ylo EDGE # Add a reflecting wall on the lower boundary
+
+#------------Measurements----------------------------------------------#
+# Include this for visualisation with with vmd.
+dump movie all atom 10 ./movie.lammpstrj
+
+#-----------Run------------------------------------------------#
+timestep ${dt} # Set the timestep of the integration.
+run ${steps}
