@@ -3,6 +3,8 @@
 \usepackage[a4paper, margin=3cm]{geometry}
 \usepackage{amsmath}
 \usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{subcaption}
 
 \title{Computational Physics: Molecular Dynamics Simulations, Assignment 1}
 \author{Vasco Ferreira}
@@ -16,45 +18,75 @@
 It would be prone to error to make simulations with would work with value to the order or $10^{-11}$, for the gravitational constant, and values of order $10^{+11}$, one astronomical unit. Therefore before anything is done, space will be rescaled by $1AU$ and time by one year ($1Y$), as follows.
 \begin{equation*}
   \begin{cases}
-    r \rightarrow &R=\frac{r}{1AU}\\
-    t \rightarrow &T=\frac{t}{1Y}
+    r \rightarrow & R=\frac{r}{1AU} \\
+    t \rightarrow & T=\frac{t}{1Y}
   \end{cases}
 \end{equation*}
 
 With this, the gravitational acceleration formula can be rewritten
 
 \begin{align*}
-  \frac{d^2r}{dt^2} &= - \frac{GM}{r^3}\hat{r}\\
-  \frac{d^2R}{dT^2} &= - \frac{(1Y)^2}{(1AU)^3}\frac{GM}{R^3}\hat{R}\\
-  \frac{d^2R}{dT^2} &= - \Gamma\frac{GM}{R^3}\hat{R}
+  \frac{d^2r}{dt^2} & = - \frac{GM}{r^3}\hat{r}                       \\
+  \frac{d^2R}{dT^2} & = - \frac{(1Y)^2}{(1AU)^3}\frac{GM}{R^3}\hat{R} \\
+  \frac{d^2R}{dT^2} & = - \frac{\Gamma}{R^3}\hat{R}
 \end{align*}
 With $\Gamma\approx39,39$. The position, velocity, and acceleration of the Verlet algorithm (eqs. (118), (119) from the lecture notes) can be generalized to 2D as follows
 \begin{align*}
-  &\begin{cases}
-    \vec{x}=(x,y)\\
-    \vec{v}=(v_x,v_y)\\
-    \vec{a}=(a_x,a_y)\\
-  \end{cases}\\
-  &\begin{cases}
-    a_x&= -\Gamma \frac{x}{\sqrt{x^2+y^2}^3}\\
-    a_y&= -\Gamma \frac{y}{\sqrt{x^2+y^2}^3}
-  \end{cases}\\
+   & \begin{cases}
+       \vec{x}=(x,y)     \\
+       \vec{v}=(v_x,v_y) \\
+       \vec{a}=(a_x,a_y) \\
+     \end{cases}                                  \\
+   & \begin{cases}
+       a_x & = -\Gamma \frac{x}{\sqrt{x^2+y^2}^3} \\
+       a_y & = -\Gamma \frac{y}{\sqrt{x^2+y^2}^3}
+     \end{cases} \\
 \end{align*}
 These positions and velocities are all rescaled as indicated above, meaning that the initial conditions are as follows $\vec{x}(t=0)=(35.2,0)$ and $\vec{v}(t=0)=(0,0.1920952)$
 
 \subsection*{b)}
-Simulation implemented in jupyter notebook, $dt=0.01$ (equivalent to $3.6$ days). When trying $dt=0.1$ accumulated error was too big and comet wasn't in orbit for more than 1 period.
+Simulation implemented with $dt=0.01$ (equivalent to $3.6$ days) and $ dt=0.001$ (equivalent to $ 8.6$ hours). Both choices resulted in fast simulations, however divergence from the orbit for $dt=0.01$ was observed, after 2 periods. For $dt=0.1$ the accumulated error was too high which resulted in the comet not completing more than 1 orbital period.
 
 \subsection*{c)}
+\begin{figure}
+  \centering
+  \begin{subfigure}{.45\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{../orbit_131.png}
+  \caption{Orbit position, red dot is at the origin, colour shows time evolution}
+  \label{fig: orbit 131}
+  \end{subfigure}
+  \hfill
+\begin{subfigure}{.45\textwidth}
+  \centering
+  \includegraphics[width=1\textwidth]{../position_131.png}
+  \caption{x and y component of trajectory over time}
+  \label{fig: position 131}
+\end{subfigure}
+\caption{Orbit position}
+\end{figure}
+In figure \ref{fig: orbit 131}, the trajectory of the simulation is plotted. Figure ~\ref{fig: position  131} shows the x and y components of $\vec{x}=(x,y)$ over time.
 
+
+\subsection*{d)}
+\begin{figure}
+  \centering
+  \includegraphics[width=.6\textwidth]{../energy_131.png}
+  \caption{Total energy (kinetic + potential) of orbit simulation over time}
+  \label{fig: energy 131}
+\end{figure}
+In figure \ref{fig: energy 131} the total energy of the system is plotted over time. It can clearly be seen that over time this isn't constant. There is a clear peak around $t=38Y$. This corresponds to the time when the comet is at the perihelion. When moving away from this high velocity point the total energy goes back down to the initial energy. 
+
+\subsection*{e)}
+The perihelion to the Sun can be found my finding what the minimum value of the position's x-axis is. This is a negative value because the Sun is set at the origin. On the rescaled coordinates the perihelion to the Sun is $0.59$, this is $0.59AU\approx8.826e10m$. At this point the velocity is $11.458$, which is equivalent to $\approx5.43e4m/s$. To calculate the period of an orbit the maximum value of the x-axis was found at the start of the simulation and after $75.784$ years.
 
 \section*{2. Symplectic vs.non-symplectic integrators}
 \subsection*{a)}
-For the Euler integrator, it can be directly seen from equation (123) from the lecture notes that the Jacobian of the time transformation is 
+For the Euler integrator, it can be directly seen from equation (123) from the lecture notes that the Jacobian of the time transformation is
 \begin{equation*}
-  M = 
+  M =
   \begin{pmatrix}
-    1 & \Delta t\\
+    1         & \Delta t \\
     -\Delta t & 1
   \end{pmatrix}
 \end{equation*}
@@ -65,30 +97,163 @@ The same can be done for the sympletic integrator from equation (124) of the lec
 \end{equation*}
 We can find that the Jacobian of the time transformation for this integrator is.
 \begin{equation*}
-  M_s = 
+  M_s =
   \begin{pmatrix}
-    1-\Delta t^2 & \Delta t\\
-    -\Delta t & 1
+    1-\Delta t^2 & \Delta t \\
+    -\Delta t    & 1
   \end{pmatrix}
 \end{equation*}
 For the sympletic integrator we have that $\det(M_s)=1-\Delta t^2+\Delta t^2 = 1$.
 
-\subsection*{b)} To show that $H'$ is a constant of motion I'll show that $H'(t+\Delta t)=H'(t)$. 
+\subsection*{b)} To show that $H'$ is a constant of motion I'll show that $H'(t+\Delta t)=H'(t)$.
 \begin{align*}
-  H'(t+\Delta t) & = \frac{(p(t+\Delta t)^2+ q(t+\Delta t)^2)}{2} -\frac{p(t+\Delta t)q(t+\Delta t)}{2}\Delta t\\
-  p(t+\Delta t)^2 &= p(t)^2 -2p(t)q(t)\Delta t + q(t)^2\Delta t^2\\
-  q(t+\Delta t)^2 &= p(t)^2\Delta t^2 +2p(t)q(t)(\Delta t - \Delta t^3)+q(t)^2(1-\Delta t^2)\\
-  p(t+\Delta t)^2+ q(t+\Delta t)^2&= p(t)^2 (1+\Delta t^2)-2p(t)q(t)\Delta t^3+q(t)^2(1-\Delta t^2+\Delta t ^4)\\ 
-  p(t+\Delta t)q(t+\Delta t) &= p(t)^2\Delta t +p(t)q(t)(1-2\Delta t^2)-q(t)^2(\Delta t - \Delta t^3)\\
-                             &\Rightarrow\\ 
-  2H'(t+\Delta t)&=p(t)^2-p(t)q(t)\Delta t + q(t)^2\\ 
-                 &= 2H'(t)
+  H'(t+\Delta t)                   & = \frac{(p(t+\Delta t)^2+ q(t+\Delta t)^2)}{2} -\frac{p(t+\Delta t)q(t+\Delta t)}{2}\Delta t \\
+  p(t+\Delta t)^2                  & = p(t)^2 -2p(t)q(t)\Delta t + q(t)^2\Delta t^2                                               \\
+  q(t+\Delta t)^2                  & = p(t)^2\Delta t^2 +2p(t)q(t)(\Delta t - \Delta t^3)+q(t)^2(1-\Delta t^2)                    \\
+  p(t+\Delta t)^2+ q(t+\Delta t)^2 & = p(t)^2 (1+\Delta t^2)-2p(t)q(t)\Delta t^3+q(t)^2(1-\Delta t^2+\Delta t ^4)                 \\
+  p(t+\Delta t)q(t+\Delta t)       & = p(t)^2\Delta t +p(t)q(t)(1-2\Delta t^2)-q(t)^2(\Delta t - \Delta t^3)                      \\
+                                   & \Rightarrow                                                                                  \\
+  2H'(t+\Delta t)                  & =p(t)^2-p(t)q(t)\Delta t + q(t)^2                                                            \\
+                                   & = 2H'(t)
 \end{align*}
 Therefore it holds that $H'=H-\frac{pq}{2}\Delta t$ is a constant of motion.
-\subsection*{c)} SIMULATION $\Rightarrow$ TODO
+\subsection*{c)}
+The exact solution of this system can be found by solving
+\begin{align*}  
+\begin{cases*}
+  \dot{p}&=\ -$q$\\
+  \dot{q}&=\ $p$
+\end{cases*}\\
+q(0)=1\\
+p(0)=0
+\end{align*}
+This leads to $q(t)= A\cos(t)+B\sin(t)$, with initial conditions the result is $q(t)=\cos(t)$ and $p(t)=-\sin(t)$
+\subsection*{d)}
+\subsection*{e)}
 
-\section*{3.}
-    
+\section*{3. Sympletic integrators II}
+For generic $A$ and $B$ one has that 
+\begin{equation*}
+  e^{\Delta t A/2}e^{\Delta t B}=e^{(\Delta t A/2+ \Delta t B + \Delta t^2/4[A,B]+\mathcal{O}(\Delta t^3))}
+\end{equation*}
+multiplying this on the left by $e^{\Delta tA/2}$ leads to
+\begin{align*}
+  e^{\Delta t A/2}e^{\Delta t B}e^{\Delta tA/2}&=e^{(\Delta t A/2+ \Delta t B + \Delta t^2/4[A,B]+\mathcal{O}(\Delta t^3))}e^{\Delta tA/2}\\
+  &=e^{(\Delta tA+\Delta tB +\Delta t^2/4[A,B]+\Delta t^2/4[B,A]+\mathcal{O}(\Delta t^3))}\\
+  &=e^{(\Delta tA+\Delta tB+\mathcal{O}(\Delta t^3))}\\
+  &=e^{(\Delta tA+\Delta tB)}+\mathcal{O}(\Delta t^3)
+\end{align*}
+Here it was used that $[A,B]=-[B,A]$ and that a triple commutator will be a $\mathcal{O}(\Delta t^3)$. The above equation is equivalent to what was desired to show 
+\begin{equation*}
+  e^{\Delta t(A+B)} = e^{\Delta tA/2}e^{\Delta tB}e^{\Delta tA/2}+\mathcal{O}(\Delta t^3)
+\end{equation*}
+For $A=D_V$ and $B=D_T$, and generalized coordinates $z=(q,p)$ a time step can be taken like so $z(t+\Delta t)=e^{\Delta t(D_V+D_T)}z(t)$ because $\dot{z}=D_Hz$ where $D_H=D_V+D_T$. Applying on this the relation previously shown will lead to
+
+\begin{align*}
+  z(t+\Delta t)&= e^{\Delta t(D_V+D_T)}z(t)\\
+  &\approx e^{\Delta tD_V/2}e^{\Delta tD_T}e^{\Delta tD_V/2}z(t)\\
+  &= CONTINUE WITH EQUATION 26 FROM LEC. NOTES
+\end{align*}
+\section*{4. Falling springs}
+\subsubsection*{a)}
+This system was simulated with the Vervet algorithm up to accumulated error $O(\Delta t^3)$. In it reflection with the ground was taken into account by having $z_i(t+\Delta t) \Rightarrow -z_i(t+\Delta t)$ and $v_i(t+\Delta t/2 \Rightarrow -v_i(t+\Delta t/2))$ if $z_i(t+\Delta t)$ was below zero.
+
+\subsection*{b)}
+The simulation was ran for ten seconds with $\Delta t \in \{0.1, 0.05, 0.01, 0.005\}$. The results of it can be seen in the figure \ref{fig:position 134}.
+\begin{figure}
+  \centering
+  \includegraphics[width=.7\textwidth]{../position_134.png}
+  \caption{Position of masses 1 and 2 over time for different $\Delta t$.}
+  \label{fig:position 134}
+\end{figure}
+On these it can be seen that for small enough $\Delta t$ individual masses can come back to their initial height but never both of them. In other words the initial gravitational potential error is never reached again after the simulation starts.
+
+\subsection*{c)}
+The elastic and gravitational potential energy, the kinetic energy, and the total energy of the system are all plotted over time in figure \ref{fig:energies 134} for each of the $\Delta t$ mentioned above.
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\textwidth]{../energy_134.png}
+  \caption{Potential energies, kinetic energy, and total energy over time}
+  \label{fig:energies 134}
+\end{figure}
+On figure \ref{fig:energies 134} with the red line, it can be seen that the total energy is indeed bounded and does not drift for small enough $\Delta t$. Once again better results are obtained for smaller $\Delta t$, for the plots of $\Delta t \in \{0.01, 0.005\}$ the total velocity had some peaks but the average value over time was the same as the initial. The small discontinuities on the total energy, I believe to be caused by either the way in which the bouncing of the ground is implemented or by instability of the system when the two masses are or top of each other. For the first hypothesis, this would arise because the mass' position and velocity both 'snap' back to above ground when the mass at a $t =  n\Delta t$ (for iteration $n$). The possibility that this arises from the instability of the system when the masses are on top of each other is because. To calculate the spring's force on each mass the direction said force is either in the positive or negative direction depending on the relative position of the two masses. When these are exactly on top of each other the system becomes unstable. Besides this, because they are non-interacting masses when they cross each other this leads to a discontinuity in the spring's potential energy. This discontinuity can easily be seen on figure \ref{fig:energies 134}, the elastic potential energy is locally discontinuous in the same way that $f(x)=|x-x_0|$ at $x=x_0$.
+
+\subsection*{d)}
+\subsection*{e)}
+
+
+\section*{5. Falling slinky}
+\subsection*{a)}
+\subsection*{b)}
+\subsection*{c)}
+\section*{6. Testing Kramers' rule}
+In 1D the potential
+$$
+V(x) = -6 \Delta V\left(\frac{x^3}{3}+\frac{x^2}{2}\right)
+$$
+has a local minimum at $x=-1$ (well) and a local maximum at $x=0$ (barrier). This means that if a particle's initial position is in $]-1.5, 0[$. Then it should stay within the well domain, unless noise is added to the system. Using Langevin's integrator such a system can be simulated while taking into account for temperature in the form of random noise.
+\subsection*{a)} An initial simulation with potential barrier $\Delta V=10$, temperature $T=0.25$, and friction coefficient $\gamma=1$ was run with $\Delta t=0.01$ until $t=1000$. This way if there was a change of escape from the potential well, for initial position $(x,v) = (-1,0)$, it would probably happen. It never escaped the wall for these parameters. The simulation was ran with the Langevin integrator that is described by equation (105) from the lecture notes. In figure \ref{fig: distribution a 136} the histogram of the positions can be found, in there both the measured and theoretical plotted values are normalized.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.7\textwidth]{../density_a_136.png}
+  \caption{Position histogram for $\Delta V=10$, compared to Boltzman distribution of theoretical distribution}
+  \label{fig: distribution a 136}
+\end{figure}
+
+\subsection*{b)}
+Before repeating the simulation for $10^4$ times it was tested for $\Delta V=10$ and $T=0.5$. After a few attempts the maximum time at which the particle escaped the well was at around $t=75$, therefore in order to simulate the system $10^4$ times, this was run until $t=300$. In total this took approximately $20$ minutes on a laptop, particles were re-initialized $112735$ times which corresponds to about $11.3$ re-initializations per particle. 
+\begin{equation}
+  TO\ FINISH
+\end{equation}
+\section*{7. Overdamped harmonic oscillator}
+
+\subsection*{a)}
+
+In the limit of $k \rightarrow 0 $ the \textit{Fokker-Planck} equations reduces to
+\begin{equation*}
+  \frac{\partial P(x,t)}{\partial t} = D\frac{\partial^2 P(x,t)}{\partial x^2}
+\end{equation*}
+This is exactly the diffusion equation, therefore for a starting distribution $P(x,t=0) = \delta(x-x_0)$, the solution will be a free diffusion equation.\\
+Another approach to this exercise is by taking $\Omega \rightarrow 0$ on the given solution of $P(x,t)$, which is equivalent to taking $k\rightarrow 0$. For small $\Omega$ the following approximations can be made
+\begin{align*}
+  sinh(\Omega t) &\approx \Omega t \\
+  e^{\pm\Omega t/a} &\approx 1\pm\frac{\Omega t}{a}
+\end{align*}
+Applying these on the given solution results in
+\begin{align*}
+  P(x,t)&\approx\left(\frac{\Omega+\mathcal{O}(\Omega^2)}{4\pi D \Omega t}\right)^{1/2}\exp\left(-\frac{\Omega}{4D}\frac{\left((x-x_0)+\frac{\Omega t}{2}(x+x_0)+\mathcal{O}(\Omega^2)\right)^2}{\Omega t}\right)\\
+  &\approx \frac{1}{\sqrt{4\pi Dt}}\exp{\left(-\frac{(x-x_0)^2}{4D}\right)}
+\end{align*}
+Which is a solution to the free diffusion equation $\partial_t P=D\partial_x^2P$
+
+\subsection*{b)}
+The equilibrium solution from statistical mechanics is $P_{eq}(x,t)\propto \exp\left(-\frac{V(x)}{k_bT}\right)$. For $k>0$ we have that $\Omega>0$ which means that $t\rightarrow\infty\Rightarrow\Omega t\gg 1$, in this approximation $sinh(\Omega t) \approx \exp(\Omega t)/2$. With the same logic the following approximation can be made $\left(x\exp(\Omega t/2)-x_0\exp(-\Omega t/2)\right)^2\approx x^2\exp(\Omega t)$. Applying these two to the given solution of $P(x,t)$ will reduce as follows
+\begin{align*}
+  P(x,t)&\approx \sqrt{\frac{\Omega\exp(\Omega t)}{4\pi D\exp(\Omega t)/2}}\exp\left(-\frac{\Omega x^2\exp(\Omega t)}{4D\exp(\Omega t)/2}\right)\\
+  &\approx \sqrt{\frac{\Omega}{2\pi D}}\exp\left(-\frac{\Omega x^2}{2D}
+  \right)
+\end{align*}
+The initial factor is composed of only constants, substituting the definition for $\Omega\equiv Dk/(k_bT)$ on the exponent results in $\exp\left(-x^2k/(2k_bT)\right)$ which is equivalent to the $P_{eq}$ expression showed above for the given potential $V(x)=kx^2/2$
+
+\subsection*{c)}
+\begin{equation}
+  TO\ SIMULATE
+\end{equation}
+\begin{equation}
+  REPEAT\ FOR\ UNDERDAMPED
+\end{equation}
+
+\section*{8. Lennard-Jones fluid}
+\subsection*{a)}
+\subsection*{b)}
+\subsection*{c)}
+\subsection*{d)}
+\subsection*{e)}
+\section*{9. Langevin dynamics of Gaussian polymers}
+\subsection*{a)}
+\subsection*{b)}
+\subsection*{c)}
 
 
 \end{document}
